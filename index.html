@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <title>jqxGrid Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" href="base/jquery.mobile-1.1.0.min.css" />
+    <link rel="stylesheet" href="base/default.css" />
+    <link rel="stylesheet" href="base/jquery.mobile.structure-1.1.0.min.css" />
     <script src="base/jquery-1.7.1.min.js"></script>
     <script src="base/jquery.mobile-1.1.0.min.js"></script>
     <link rel="stylesheet" href="styles/jqx.base.css" type="text/css" />
@@ -18,13 +19,14 @@
     <script type="text/javascript" src="scripts/jqxgrid.js"></script>
     <script type="text/javascript" src="scripts/jqxgrid.sort.js"></script>
     <script type="text/javascript" src="scripts/jqxgrid.pager.js"></script>
+	<script type="text/javascript" src="scripts/jqxgrid.grouping.js"></script>
     <script type="text/javascript" src="scripts/jqxgrid.selection.js"></script>
     <script type="text/javascript" src="generatedata.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             var theme = '';
 
-            var data = generatedata(150);
+            var data = generatedata(500);
 
             var source =
             {
@@ -33,11 +35,38 @@
             };
 
             var dataAdapter = new $.jqx.dataAdapter(source);
+			
+			var pagerrenderer = function () {
+				var element = $("<div style='margin-top: 5px; width: 100%; height: 100%;'></div>");
+				var paginginfo = $("#jqxgrid").jqxGrid('getpaginginformation');
+				for (i = 0; i < paginginfo.pagescount; i++) {
+					var anchor = $("<a style='padding: 5px;' href='#" + i + "'>" + i + "</a>");
+					anchor.appendTo(element);
+					anchor.click(function (event) {
+						var pagenum = parseInt($(event.target).text());
+						$("#jqxgrid").jqxGrid('gotopage', pagenum);
+					});
+				}
+
+				return element;
+			}
+			
+			var columnrenderer = function (value) {
+                return '<div style="text-align: center; font-weight:bold; font-size:14px; margin-top:8px;">' + value + '</div>';
+            }
+			
+			var cellsrenderer = function (row, column, value) {
+                return '<div style="margin-top: 5px;">' + value + '</div>';
+            }
+			
+			var numbercellsrenderer = function (row, column, value) {
+                return '<div style="text-align: right;margin-top: 5px;color:Red;">' + value + '</div>';
+            }
 
             $("#jqxgrid").jqxGrid(
             {
-                width: $(window).width() - 20,
-                height: 350,
+                width: $(window).width() - 30,
+                height: 450,
                 columnsmenu: false,
                 columnsheight: 35,
                 rowsheight: 30,
@@ -45,26 +74,49 @@
                 theme: theme,
                 sortable: true,
                 pageable: true,
-                touchmode: true,
-                pagesizeoptions: ['30', '40', '50'],
+				pagerheight: 35,				
+				//pagerrenderer: pagerrenderer,
+				touchmode: true,
+                pagesize: 50,
+				pagesizeoptions: ['50', '80', '100'],
+				//groupable: true,
+				//groups: ['productname'],
                 columns: [
-                  { text: 'First Name', dataField: 'firstname', minwidth: 100, pinned: true },
-                  { text: 'Last Name', dataField: 'lastname', minwidth: 100 },
-                  { text: 'Product', dataField: 'productname', minwidth: 100 },
-                  { text: 'Quantity', dataField: 'quantity', width: 80, cellsalign: 'right' },
-                  { text: 'Unit Price', dataField: 'price', width: 90, cellsalign: 'right', cellsformat: 'c2' },
-                  { text: 'Total', dataField: 'total', cellsalign: 'right', width: 100, cellsformat: 'c2' }
+                  { text: 'First Name', dataField: 'firstname', minwidth: 100, classname: 'header', cellclassname : 'textcell' /*renderer: columnrenderer, cellsrenderer: cellsrenderer*/ },
+                  { text: 'Last Name', dataField: 'lastname', minwidth: 100, classname: 'header', cellclassname : 'textcell'/*renderer: columnrenderer, cellsrenderer: cellsrenderer*/ },
+                  { text: 'Product', dataField: 'productname', minwidth: 100, classname: 'header', cellclassname: 'textcell'/*renderer: columnrenderer, cellsrenderer: cellsrenderer*/ },
+                  { text: 'Quantity', dataField: 'quantity', width: 80, cellsalign: 'right', classname: 'header', cellclassname : 'numbercell'/*renderer: columnrenderer*/ },
+                  { text: 'Unit Price', dataField: 'price', width: 90, cellsalign: 'right', cellsformat: 'c2', classname: 'header', cellclassname : 'numbercell'/*renderer: columnrenderer, cellsrenderer: numbercellsrenderer*/ },
+                  { text: 'Total', dataField: 'total', cellsalign: 'right', width: 100, cellsformat: 'c2', classname: 'header', cellclassname : 'numbercell'/*renderer: columnrenderer*/ }
                 ],
                 ready: function () {
                     $("#jqxgrid").jqxGrid('sortby', 'firstname', 'asc');
                 }
             });
-        });
+
+            $('#jqxGrid').bind('initialized', function () { alert('aa'); }); 
+        });        
 
         $(window).bind('resize', function () {
-            $('#jqxgrid').jqxGrid({ width: $(window).width() -20 });
+            $('#jqxgrid').jqxGrid({ width: $(window).width() -30 });
         }).trigger('resize');
     </script>
+    <style type="text/css">
+        .header
+        {
+            font-weight:bold; font-size:14px; /*margin-top:5px;*/
+        }
+        
+        .textcell
+        {
+            
+        }
+        
+        .numbercell
+        {
+            color:Red;
+        }
+    </style>
 </head>
 <body class='default'>
     <div data-role="page" id="mainPage">
